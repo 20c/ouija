@@ -57,6 +57,13 @@ twentyc.rest.Response = twentyc.cls.define(
       }
     },
 
+    first : function() {
+      if(this.content && this.content.data) {
+        return this.content.data[0];
+      }
+      return null;
+    },
+
     field_errors : function(callback) {
       if(!this.has_errors())
         return
@@ -234,7 +241,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
 
     done_processing : function() {
       this.busy = false
-      if(this.loading_shim)
+      if(this.loading_shim && !window.debug_loading_shim)
         this.loading_shim.hide();
       $(this).trigger("ready");
     },
@@ -487,11 +494,12 @@ twentyc.rest.List = twentyc.cls.extend(
     },
 
     load : function() {
-      this.get(this.action, this.payload()).then(function(response) {
+      return this.get(this.action, this.payload()).then(function(response) {
         this.list_body.empty()
         response.rows(function(row, idx) {
           this.insert(row);
         }.bind(this));
+        return
       }.bind(this));
     },
 
@@ -535,7 +543,12 @@ twentyc.rest.List = twentyc.cls.extend(
     },
 
     remove : function(data) {
+      $(this).trigger("remove:before", [data]);
       this.list_body.find('.row-'+data[this.id_field]).detach();
+    },
+
+    find_row : function(id) {
+      return this.list_body.find('.row-'+id);
     },
 
     action_failure : function(response) {
