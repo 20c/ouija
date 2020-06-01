@@ -1,6 +1,25 @@
 (function(twentyc, $) {
 
 /**
+ * jquery function for closest descendant
+ * credit: https://stackoverflow.com/a/8962023
+ */
+
+(function($) {
+    $.fn.closest_descendant = function(filter) {
+        var $found = $(),
+            $currentSet = this.children(); // Current place
+        while ($currentSet.length) {
+            $found = $currentSet.filter(filter);
+            if ($found.length) break;  // At least one match: break loop
+            // Get all children of the current set
+            $currentSet = $currentSet.children();
+        }
+        return $found.first(); // Return first match of the collection
+    }
+})(jQuery);
+
+/**
  * namespace for twentyc.rest
  */
 
@@ -247,8 +266,9 @@ twentyc.rest.Widget = twentyc.cls.extend(
     },
 
     template : function(name) {
-      var tmpl = this.element.find('.templates').find('[data-template="'+name+'"]')
-      return tmpl.clone()
+      var tmpl = this.element.closest_descendant('.templates').find('[data-template="'+name+'"]')
+      var clone = tmpl.clone().attr('data-template', null);
+      return clone;
     },
 
     bind : function(jq) {
@@ -499,6 +519,7 @@ twentyc.rest.List = twentyc.cls.extend(
         response.rows(function(row, idx) {
           this.insert(row);
         }.bind(this));
+        $(this).trigger("load:after");
         return
       }.bind(this));
     },
@@ -534,6 +555,8 @@ twentyc.rest.List = twentyc.cls.extend(
 
       this.list_body.append(row_element)
       this.wire(row_element)
+
+      $(this).trigger("insert:after", [row_element, data]);
     },
 
     api_callback_remove : function(response) {
