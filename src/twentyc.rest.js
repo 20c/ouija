@@ -244,6 +244,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
   {
     Widget : function(base_url, jq) {
      this.action = jq.data("api-action")
+     this.local_actions = {}
      this.Client(base_url);
      this.bind(jq);
     },
@@ -295,6 +296,10 @@ twentyc.rest.Widget = twentyc.cls.extend(
       }.bind(this));
 
 
+    },
+
+    local_action : function(name, fn) {
+      this.local_actions[name] = fn;
     },
 
     clear_errors : function() {
@@ -581,6 +586,14 @@ twentyc.rest.List = twentyc.cls.extend(
 
     wire : function(row) {
       var widget = this;
+
+      row.find('a[data-action]').click(function() {
+        var actionName = $(this).data("action")
+        if(widget.local_actions[actionName]) {
+          widget.local_actions[actionName](row.data("apiobject"), row);
+        }
+      });
+
       row.find('a[data-api-action], button[data-api-action]').each(function() {
         var method = ($(this).data("api-method") || "POST").toLowerCase();
         var action = $(this).data("api-action").toLowerCase();
