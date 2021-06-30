@@ -62,10 +62,12 @@ twentyc.rest.Response = twentyc.cls.define(
   {
 
     Response : function(response, status) {
+
       if(!response || (!response.data && !response.errors) ) {
         this.status = status;
         return;
       }
+      this.status = status;
       this.content = response;
     },
 
@@ -144,7 +146,6 @@ twentyc.rest.Response = twentyc.cls.define(
         nfe = [nfe];
 
       if(nfe) {
-        var i;
         callback(nfe)
       }
 
@@ -163,6 +164,10 @@ twentyc.rest.Response = twentyc.cls.define(
       if(this.status == 403) return "Permission Denied";
       if(this.status == 404) return "Resource not found";
       if(this.status == 405) return "Method not allowed";
+      if(this.status == 429){
+        if (this.content.errors.detail) return this.content.errors.detail;
+        return "Request is rate limited";
+      }
       if(this.status == 500) return "Internal Error";
       return "Http Error "+this.status;
     },
@@ -532,7 +537,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
      */
 
     render_error : function(key, errors) {
-      var i, e;
+      var i;
       var error_node = $('<div>').addClass("validation-error");
       var input = this.element.find('[name="'+key+'"]');
       input.addClass("validation-error-indicator")
@@ -552,6 +557,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
 
     render_non_field_errors : function(errors) {
       var error_node = $('<div>').addClass("alert alert-danger validation-error");
+      let i;
       for(i = 0; i < errors.length; i++) {
         error_node.append($('<div>').text(errors[i]))
       }
@@ -1052,7 +1058,7 @@ twentyc.rest.List = twentyc.cls.extend(
           if(match) {
             _action = row.data("apiobject")[match[1]];
           }
-          var request = widget[method](_action, row.data("apiobject")).then(
+          widget[method](_action, row.data("apiobject")).then(
             callback, widget.action_failure.bind(widget)
           );
         });
@@ -1108,10 +1114,17 @@ twentyc.rest.PermissionsForm = twentyc.cls.extend(
      */
 
     set_flag_values : function(flags) {
-      var form = this;
       this.element.find('input[data-permission-flag]').each(function() {
         var flag_name = $(this).data("permission-flag")
-        var value = (flags.indexOf(flag_name) > -1)
+        if(flag_name.length == 1) {
+          var value = (flags.perms.indexOf(flag_name) > -1)
+        } else {
+          var i, value = true;
+          for(i = 0; i < flag_name.length; i++) {
+            if(flags.perms.indexOf(flag_name.charAt(i)) == -1)
+              value = false;
+          }
+        }
         $(this).prop("checked", value)
       });
     },
