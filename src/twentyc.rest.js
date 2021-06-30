@@ -337,6 +337,19 @@ twentyc.rest.Client = twentyc.cls.define(
     },
 
     /**
+     * Wrapper to perform a `OPTIONS` request on the api
+     *
+     * @method options
+     * @param {String} endpoint
+     * @param {Object} params url parameters
+     * @returns {Promise}
+     */
+
+    options : function(endpoint, params) {
+      return this.read(endpoint, params, "options");
+    },
+
+    /**
      * Wrapper to perform a `POST` request on the api
      *
      * @method post
@@ -556,10 +569,12 @@ twentyc.rest.Widget = twentyc.cls.extend(
      */
 
     render_non_field_errors : function(errors) {
-      var error_node = $('<div>').addClass("alert alert-danger validation-error");
+      var error_node = $('<div>').addClass("alert alert-danger validation-error non-field-errors");
       let i;
       for(i = 0; i < errors.length; i++) {
-        error_node.append($('<div>').text(errors[i]))
+        $(twentyc.rest).trigger("non-field-error", [errors[i], errors, i, error_node, this]);
+        if(errors[i])
+          error_node.append($('<div>').addClass("non-field-error").text(errors[i]))
       }
       this.element.prepend(error_node)
     },
@@ -749,6 +764,11 @@ twentyc.rest.Form = twentyc.cls.extend(
  *   defaultd to "id"
  * - data-selected-field: which data resultset field to check whether and option
  *   should be auto-selected, defaults to "selected"
+ * - data-load-type: what load method to use, can be "get" or "drf_choices",
+ *   with the latter being a way to load in django-rest-framework field values
+ *   choices. Defaults to "get"
+ * - data-drf-name: relevant if load type is "drf-choices". Specifies the
+ *   serializer field name, will default to "name" attribute if not specified.
  *
  * @class Select
  * @extends twentyc.rest.widget
@@ -765,6 +785,8 @@ twentyc.rest.Select = twentyc.cls.extend(
       this.name_field = jq.data("name-field") || "name"
       this.id_field = jq.data("id-field") || "id"
       this.selected_field = jq.data("selected-field") || "selected"
+      this.load_type = jq.data("load-type") || "get"
+      this.drf_name = jq.data("drf-name") || jq.attr("name");
       this.Widget(base_url, jq);
     },
 
@@ -785,12 +807,50 @@ twentyc.rest.Select = twentyc.cls.extend(
     /**
      * loads options from the api
      *
+     * this will call _load_get or _load_drf_choices depending
+     * on which load-type is specified (see data-load-type attribute)
+     *
      * triggers load:after event
      *
      * @method load
+     * @param {Mixed} select_this if specified will select this value after
+     *   load
      */
 
     load : function(select_this) {
+
+      if(this.load_type == "drf-choices")
+        return this._load_drf_choices(select_this);
+
+      return this._load_get(select_this);
+
+    },
+
+    /**
+     * loads data in via a GET request
+     *
+     * expects data to come back as a list of object literals
+     * containing keys for `this.name_field` and `this.id_field`
+     *
+     * this method is called automatically by `this.load` if the
+     * the load-type of the select widget is set to "get"
+     *
+     * Example assuming this.name_field == 'name' and this.id_field = 'id'
+     *
+     * {
+     *   "data": [
+     *     { "name": "Choice 1", "id": 1 },
+     *     { "name": "Choice 2", "id": 2 }
+     *   ]
+     * }
+     *
+     * @method _load_get
+     * @private
+     * @param {Mixed} select_this if specified will select this value after
+     *   load
+     */
+
+    _load_get : function(select_this) {
 
       return this.get().then(function(response) {
         var select = this.element;
@@ -806,7 +866,39 @@ twentyc.rest.Select = twentyc.cls.extend(
           select.append(opt);
         });
 
+        if(select_this)
+          select.val(select_this);
+
         $(this).trigger("load:after", [select, response.content.data]);
+      }.bind(this));
+    },
+
+    /**
+     * loads data in via a OPTIONS request to a django-rest-framework
+     * api endpoint
+     *
+     * this method is called automatically by `this.load` if the
+     * the load-type of the select widget is set to "drf_choices"
+     *
+     * @method _load_drf_choices
+     * @private
+     * @param {Mixed} select_this if specified will select this value after
+     *   load
+     */
+
+    _load_drf_choices : function(select_this) {
+      return this.options().then(function(response) {
+        var select = this.element.empty();
+        var options = response.content.data[0].actions.POST[this.drf_name].choices;
+        $(options).each(function() {
+          select.append(
+            $('<option>').val(this.value).text(this.display_name)
+          )
+        });
+
+        if(select_this)
+          select.val(select_this);
+
       }.bind(this));
     },
 
@@ -1053,11 +1145,13 @@ twentyc.rest.List = twentyc.cls.extend(
         $(this).click(function() {
           if(confirm_set && !confirm(confirm_set))
             return;
-          var _action = action;
-          var match = action.match(/^\{(.+)\}$/);
-          if(match) {
-            _action = row.data("apiobject")[match[1]];
-          }
+          var apiobj = row.data("apiobject")
+          var _action = action.replace(
+            /\{([^\{\}]+)\}/,
+            (match, p1, offset, string) => {
+              return apiobj[p1];
+            }
+          )
           widget[method](_action, row.data("apiobject")).then(
             callback, widget.action_failure.bind(widget)
           );
