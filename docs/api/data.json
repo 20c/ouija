@@ -1,0 +1,996 @@
+{
+    "project": {},
+    "files": {
+        "src/twentyc.rest.js": {
+            "name": "src/twentyc.rest.js",
+            "modules": {},
+            "classes": {
+                "twentyc.rest.Response": 1,
+                "twentyc.rest.Client": 1,
+                "twentyc.rest.Widget": 1,
+                "twentyc.rest.Form": 1,
+                "twentyc.rest.Select": 1,
+                "twentyc.rest.List": 1,
+                "twentyc.rest.PermissionForm": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "twentyc.rest": 1,
+                "twentyc.rest.config": 1
+            }
+        }
+    },
+    "modules": {},
+    "classes": {
+        "twentyc.rest.Response": {
+            "name": "twentyc.rest.Response",
+            "shortname": "twentyc.rest.Response",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 51,
+            "description": "Wrapper for API responses",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "response",
+                    "description": "",
+                    "type": "XHR Response"
+                },
+                {
+                    "name": "status",
+                    "description": "",
+                    "type": "Number"
+                }
+            ]
+        },
+        "twentyc.rest.Client": {
+            "name": "twentyc.rest.Client",
+            "shortname": "twentyc.rest.Client",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 197,
+            "description": "Base API functionality / connection handler",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "base_url",
+                    "description": "path to the api root",
+                    "type": "String"
+                }
+            ]
+        },
+        "twentyc.rest.Widget": {
+            "name": "twentyc.rest.Widget",
+            "shortname": "twentyc.rest.Widget",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 398,
+            "description": "Base class for API widgets",
+            "extends": "twentyc.rest.Client",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "base_url",
+                    "description": "api root",
+                    "type": "String"
+                },
+                {
+                    "name": "jq",
+                    "description": "jquery result holding the main element of the widget",
+                    "type": "JQuery result"
+                }
+            ]
+        },
+        "twentyc.rest.Form": {
+            "name": "twentyc.rest.Form",
+            "shortname": "twentyc.rest.Form",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 621,
+            "description": "Form widget that binds a HTML form to the REST api\n\nThe form element should have the following attributes set\n\n# required\n\n- data-api-base: api root or full path to endpoint\n\n# optional\n\n- data-api-action: if specified will be appended as endpoint to data-api-base\n- data-api-method: request method for writes, defaults to POST\n\nIf the form element contains a button element with the\n`submit` css class set it will be wired to submit the form\non click",
+            "extends": "twentyc.rest.Widget",
+            "params": [
+                {
+                    "name": "jq",
+                    "description": "form element",
+                    "type": "JQuery result"
+                }
+            ]
+        },
+        "twentyc.rest.Select": {
+            "name": "twentyc.rest.Select",
+            "shortname": "twentyc.rest.Select",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 881,
+            "description": "Wires a `select` element to the API\n\nThe select element should have the following attributes set\n\n# required\n\n- data-api-base: api root or full path to endpoint\n\n# optional\n\n- data-api-load: endpoint that should be requested to load options\n- data-name-field: which data resultset field to use for option text,\n  defaults to \"name\"\n- data-id-field: which data resultset field to use for option value,\n  defaultd to \"id\"\n- data-selected-field: which data resultset field to check whether and option\n  should be auto-selected, defaults to \"selected\"\n- data-load-type: what load method to use, can be \"get\" or \"drf-choices\",\n  with the latter being a way to load in django-rest-framework field values\n  choices. Defaults to \"get\"\n- data-drf-name: relevant if load type is \"drf-choices\". Specifies the\n  serializer field name, will default to \"name\" attribute if not specified.",
+            "extends": "twentyc.rest.widget",
+            "params": [
+                {
+                    "name": "jq",
+                    "description": "jquery result holding the select element",
+                    "type": "JQuery result"
+                }
+            ]
+        },
+        "twentyc.rest.List": {
+            "name": "twentyc.rest.List",
+            "shortname": "twentyc.rest.List",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 1115,
+            "description": "Data listing widget\n\nA way to visualize an api data response in a table\n\n# element attributes\n\nThis widget element should have these html attributes set\n\n## required\n\n- data-api-base: api root or full path to endpoint\n\n## optional\n\n- data-api-action: if specified will be appended as endpoint to data-api-base\n\n# DOM structure\n\nThe widget element should contain the following child elements\n\n- element with `list-body` css class, which will serve as a\n  container for rows, if your widget element is a table this\n  would be a tbody element.\n- element with data-template=\"row\" attr set, which will be used\n  to clone for individual rows\n\n  within the row element, child elements will be scanned for\n  data-field attributes to match against the field names in the api\n  result set.\n\n# Example\n\n```json\n{\n  \"data\": [\n     { \"id\": 1, \"name\": \"first row\" },\n     {\" id\": 2, \"name\": \"second row\" }\n  ]\n}\n```\n\n```html\n<table data-api-base=\"/api/my_list\" id=\"my_list\">\n <tbody class=\"list-body\"></tbody>\n <tbody class=\"templates\">\n   <tr data-template=\"row\">\n     <td data-field=\"id\"></td>\n     <td data-field=\"name\"></td>\n   </tr>\n </tbody>\n</table>\n```\n\n```javascript\nvar list = new twentyc.rest.List($('#my_list'))\nlist.load();\n```",
+            "extends": "twentyc.rest.Widget",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "jq",
+                    "description": "jquery result holding widget element (table)",
+                    "type": "JQuery result"
+                }
+            ]
+        },
+        "twentyc.rest.PermissionForm": {
+            "name": "twentyc.rest.PermissionForm",
+            "shortname": "twentyc.rest.PermissionForm",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "namespace": "twentyc.rest",
+            "file": "src/twentyc.rest.js",
+            "line": 1450,
+            "description": "Special form widget for handling user permissions\n\nThis expect a form element that contains checkboxes for\npermission flags\n\nEach checkbox element should have these attributes set\n\n- data-permission-flag unique flag name to describe the permssion level\n\n# Example\n\n```html\n<span><input data-permission-flag=\"c\" type=\"checkbox\"> create</span>\n<span><input data-permission-flag=\"r\" type=\"checkbox\"> read</span>\n<span><input data-permission-flag=\"u\" type=\"checkbox\"> update</span>\n<span><input data-permission-flag=\"d\" type=\"checkbox\"> delete</span>\n```",
+            "extends": "twentyc.rest.Form",
+            "is_constructor": 1
+        }
+    },
+    "elements": {},
+    "classitems": [
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 3,
+            "description": "jquery function for closest descendant\ncredit: https://stackoverflow.com/a/8962023",
+            "class": "twentyc.rest.Response"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 22,
+            "description": "namespace for twentyc.rest",
+            "class": "twentyc.rest.Response"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 28,
+            "description": "object holding global config",
+            "type": "Object",
+            "name": "config",
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 37,
+            "description": "set this to the CSRF token that should\nbe sent with write requests to the API\nif any",
+            "type": "String",
+            "name": "csrf",
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest.config"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 74,
+            "description": "invokes a callback on each row in the api response\ndata resultset\n\ncallback will be passed the data row as well as the index\nof the row entry",
+            "itemtype": "method",
+            "name": "rows",
+            "params": [
+                {
+                    "name": "callback",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 92,
+            "description": "returns the first row in the api response\ndata resultset",
+            "itemtype": "method",
+            "name": "first",
+            "return": {
+                "description": "",
+                "type": "Object"
+            },
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 107,
+            "description": "process field errors returned by the api\nin a callback\n\ncallback wil be invoked once for each field and\nbe passed an array of strings",
+            "itemtype": "method",
+            "name": "field_errors",
+            "params": [
+                {
+                    "name": "callback",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 131,
+            "description": "process non-field errors returned by the api\nin a callback",
+            "itemtype": "method",
+            "name": "non_field_errors",
+            "params": [
+                {
+                    "name": "callback",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 154,
+            "description": "returns a user friendly error message for the\nhttp status of the response",
+            "itemtype": "method",
+            "name": "http_status_text",
+            "return": {
+                "description": "",
+                "type": "String"
+            },
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 175,
+            "description": "returns whether the response has error information\nor not",
+            "itemtype": "method",
+            "name": "has_errors",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "twentyc.rest.Response",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 213,
+            "description": "returns path to endpoint by appending\nprovided value to the api root base url",
+            "itemtype": "method",
+            "name": "endpoint_url",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 226,
+            "description": "Encodes and object literal to json",
+            "itemtype": "method",
+            "name": "encode",
+            "params": [
+                {
+                    "name": "data",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "String"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 241,
+            "description": "Perform a read request (GET, HEAD, OPTIONS) on the api",
+            "itemtype": "method",
+            "name": "read",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "api endpoint",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "url parameters to pass",
+                    "type": "Object"
+                },
+                {
+                    "name": "method",
+                    "description": "http request method (GET, HEAD or OPTIONS)",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 283,
+            "description": "Perform a write request (POST, PUT, PATCH, DELETE) on the api",
+            "itemtype": "method",
+            "name": "write",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "api endpoint",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "payload",
+                    "type": "Object"
+                },
+                {
+                    "name": "method",
+                    "description": "http request method",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 330,
+            "description": "Wrapper to perform a `GET` request on the api",
+            "itemtype": "method",
+            "name": "get",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "params",
+                    "description": "url parameters",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 343,
+            "description": "Wrapper to perform a `OPTIONS` request on the api",
+            "itemtype": "method",
+            "name": "options",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "params",
+                    "description": "url parameters",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 356,
+            "description": "Wrapper to perform a `POST` request on the api",
+            "itemtype": "method",
+            "name": "post",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "payload",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 369,
+            "description": "Wrapper to perform a `PUT` request on the api",
+            "itemtype": "method",
+            "name": "post",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "payload",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 382,
+            "description": "Wrapper to perform a `DELETE` request on the api",
+            "itemtype": "method",
+            "name": "post",
+            "params": [
+                {
+                    "name": "endpoint",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "payload",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Promise"
+            },
+            "class": "twentyc.rest.Client",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 415,
+            "description": "allows you to define local actions (experimental)",
+            "itemtype": "property",
+            "name": "local_actions",
+            "type": "Object",
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 424,
+            "description": "Sets the widget state to processing\n\nThis will trigger the `processing` event",
+            "itemtype": "method",
+            "name": "start_processing",
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 445,
+            "description": "Sets the widget state to ready or done with processing\n\nThis will trigger the `ready` event",
+            "itemtype": "method",
+            "name": "done_processing",
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 460,
+            "description": "Clones a template element by name and returns it\n\nTemplates for a widget should be stored within an element inside\nthe widget that has it's `.templates` css class set\n\nA template is designated a template if it has the\n`data-template` attribute set to hold the template name\n\n```html\n<div class=\"widget\">\n <div class=\"templates\">\n   <div data-template=\"my_template\"></div>\n </div>\n</div>\n```\n\n```javascript\nvar tmpl = widget.template('my_template')\n```",
+            "itemtype": "method",
+            "name": "template",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "template name (as specified in data-template)",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "jquery result holding the cloned template node",
+                "type": "JQuery result"
+            },
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 492,
+            "description": "Binds the widget to a html element",
+            "itemtype": "method",
+            "name": "bind",
+            "params": [
+                {
+                    "name": "jq",
+                    "description": "jquery result holding the html element",
+                    "type": "JQuery result"
+                }
+            ],
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 523,
+            "description": "Defines a local action that some widget's\nmay invoke\n\nLocal actions can be set on the widget element or sub elements\nvia the `data-action` attribute",
+            "itemtype": "method",
+            "name": "local_action",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "action name",
+                    "type": "String"
+                },
+                {
+                    "name": "fn",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 539,
+            "description": "Clears all validation / input errors for the widget",
+            "itemtype": "method",
+            "name": "clear_errors",
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 550,
+            "description": "Renders field errors (think input vaidation errors)",
+            "itemtype": "method",
+            "name": "render_error",
+            "params": [
+                {
+                    "name": "key",
+                    "description": "field name",
+                    "type": "String"
+                },
+                {
+                    "name": "errors",
+                    "description": "list of error strings",
+                    "type": "Array"
+                }
+            ],
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 570,
+            "description": "Renders non field errors (think server errors, generic errors)",
+            "itemtype": "method",
+            "name": "render_non_field_errors",
+            "params": [
+                {
+                    "name": "errors",
+                    "description": "list of error strings",
+                    "type": "Array"
+                }
+            ],
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 588,
+            "description": "Prepares the payload for the widget's write request\nby checking for form elements and converting their values\nto an object literal compatible to be sent as a payload",
+            "params": [
+                {
+                    "name": "payload",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Object"
+            },
+            "class": "twentyc.rest.Widget",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 654,
+            "description": "Fill the form fields from values provided in\nan object literal thats keyed by field name\n\nNames in `data` will be matched against the `name` attribute\nof the form inputs",
+            "itemtype": "method",
+            "name": "fill",
+            "params": [
+                {
+                    "name": "data",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 702,
+            "description": "Submit the form using the specified method",
+            "itemtype": "method",
+            "name": "submit",
+            "params": [
+                {
+                    "name": "method",
+                    "description": "http request method",
+                    "type": "String"
+                }
+            ],
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 722,
+            "description": "Binds the form widget to a html element\n\nThis is called automatically in the constructor",
+            "itemtype": "method",
+            "name": "bind",
+            "params": [
+                {
+                    "name": "jq",
+                    "description": "",
+                    "type": "JQuery result"
+                }
+            ],
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 760,
+            "description": "Wires a button to submit the form",
+            "itemtype": "method",
+            "name": "wire_submit",
+            "params": [
+                {
+                    "name": "jq_button",
+                    "description": "jquery result holding button element",
+                    "type": "JQuery result"
+                }
+            ],
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 786,
+            "description": "Sets the widget state to processing\n\nThis will trigger the `processing` event",
+            "itemtype": "method",
+            "name": "start_processing",
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 801,
+            "description": "Sets the widget state to ready or done with processing\n\nThis will trigger the `ready` event",
+            "itemtype": "method",
+            "name": "done_processing",
+            "class": "twentyc.rest.Form",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 939,
+            "description": "loads options from the api\n\nthis will call _load_get or _load_drf_choices depending\non which load-type is specified (see data-load-type attribute)\n\ntriggers load:after event",
+            "itemtype": "method",
+            "name": "load",
+            "params": [
+                {
+                    "name": "select_this",
+                    "description": "if specified will select this value after\n  load",
+                    "type": "Mixed"
+                }
+            ],
+            "class": "twentyc.rest.Select",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 971,
+            "description": "loads data in via a GET request\n\nexpects data to come back as a list of object literals\ncontaining keys for `this.name_field` and `this.id_field`\n\nthis method is called automatically by `this.load` if the\nthe load-type of the select widget is set to \"get\"\n\nExample assuming this.name_field == 'name' and this.id_field = 'id'\n\n{\n  \"data\": [\n    { \"name\": \"Choice 1\", \"id\": 1 },\n    { \"name\": \"Choice 2\", \"id\": 2 }\n  ]\n}",
+            "itemtype": "method",
+            "name": "_load_get",
+            "access": "private",
+            "tagname": "",
+            "params": [
+                {
+                    "name": "select_this",
+                    "description": "if specified will select this value after\n  load",
+                    "type": "Mixed"
+                }
+            ],
+            "class": "twentyc.rest.Select",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1030,
+            "description": "loads data in via a OPTIONS request to a django-rest-framework\napi endpoint\n\nthis method is called automatically by `this.load` if the\nthe load-type of the select widget is set to \"drf_choices\"",
+            "itemtype": "method",
+            "name": "_load_drf_choices",
+            "access": "private",
+            "tagname": "",
+            "params": [
+                {
+                    "name": "select_this",
+                    "description": "if specified will select this value after\n  load",
+                    "type": "Mixed"
+                }
+            ],
+            "class": "twentyc.rest.Select",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1066,
+            "description": "refreshes options from the api\n\nthis is the same as load, but will maintain the current\nselection choice as long as it still exists in the the\nfresh dataset",
+            "itemtype": "method",
+            "name": "refresh",
+            "class": "twentyc.rest.Select",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1196,
+            "description": "loads rows into the list\n\nthis empties all current rows before it does so\n\ntriggers load:after event",
+            "itemtype": "method",
+            "name": "load",
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1220,
+            "description": "reload single row",
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1235,
+            "description": "insert a new row from object\n\ntriggers insert:after event",
+            "itemtype": "method",
+            "name": "insert",
+            "params": [
+                {
+                    "name": "data",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1287,
+            "description": "Removes the row for the supplied api response row object",
+            "itemtype": "method",
+            "name": "remove",
+            "params": [
+                {
+                    "name": "data",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1299,
+            "description": "return row element for object id",
+            "itemtype": "method",
+            "name": "find_row",
+            "params": [
+                {
+                    "name": "id",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "JQuery result"
+            },
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1365,
+            "description": "sorting",
+            "class": "twentyc.rest.List",
+            "namespace": "twentyc.rest"
+        },
+        {
+            "file": "src/twentyc.rest.js",
+            "line": 1478,
+            "description": "Updates the checkboxes states according to the flags\nprovided\n\nFor example passing `crud` would check all checkboxes\nwhile passing `r` would only check the checkbox for read access",
+            "itemtype": "method",
+            "name": "set_flag_values",
+            "params": [
+                {
+                    "name": "flags",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "twentyc.rest.PermissionForm",
+            "namespace": "twentyc.rest"
+        }
+    ],
+    "warnings": [
+        {
+            "message": "unknown tag: name",
+            "line": " src/twentyc.rest.js:28"
+        },
+        {
+            "message": "unknown tag: name",
+            "line": " src/twentyc.rest.js:37"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:92"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:154"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:175"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:226"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:241"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:283"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:330"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:343"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:356"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:369"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:382"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:460"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:588"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/twentyc.rest.js:1299"
+        },
+        {
+            "message": "Missing item type\njquery function for closest descendant\ncredit: https://stackoverflow.com/a/8962023",
+            "line": " src/twentyc.rest.js:3"
+        },
+        {
+            "message": "Missing item type\nnamespace for twentyc.rest",
+            "line": " src/twentyc.rest.js:22"
+        },
+        {
+            "message": "Missing item type\nobject holding global config",
+            "line": " src/twentyc.rest.js:28"
+        },
+        {
+            "message": "Missing item type\nset this to the CSRF token that should\nbe sent with write requests to the API\nif any",
+            "line": " src/twentyc.rest.js:37"
+        },
+        {
+            "message": "Missing item type\nPrepares the payload for the widget's write request\nby checking for form elements and converting their values\nto an object literal compatible to be sent as a payload",
+            "line": " src/twentyc.rest.js:588"
+        },
+        {
+            "message": "Missing item type\nreload single row",
+            "line": " src/twentyc.rest.js:1220"
+        },
+        {
+            "message": "Missing item type\nsorting",
+            "line": " src/twentyc.rest.js:1365"
+        }
+    ]
+}
