@@ -18,6 +18,57 @@ yuidoc src -o api-docs --server 8080
 
 APIDocs should now be available on `http://localhost:8080`
 
+# Adding ouija
+
+ouija has two requirements:
+
+1. jquery 3
+2. 20c javascript core, either checkout [it's github repository](github.com:20c/js-core") and copy the file out of the /dist directory, or alternatively simply download it from [here](https://raw.githubusercontent.com/20c/js-core/master/dist/twentyc.core.min.js)
+
+
+```html
+  <head>
+
+    <!-- jquery -->
+  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- 20C javascript core library -->
+
+    <script src="/twentyc.core.min.js"></script>
+
+    <!-- 20C ouija library -->
+
+    <script src="/twentyc.rest.js"></script>
+
+
+  </head>
+```
+
+## CSS
+
+You will want to hide elements with the `templates` class, add the following css rule
+
+```css
+.templates {
+  display: none;
+}
+```
+
+The loading-shim will also need some styling
+
+```css
+.loading-shim {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: 10;
+  background-color: rgba(255,255,255,0.5);
+}
+```
+
 ## License
 
 Copyright 2020-2022 20C, LLC
