@@ -120,11 +120,30 @@ twentyc.rest.Response = twentyc.cls.define(
         return
 
       var key;
-      for(key in this.content.errors) {
-        if(key == "non_field_errors")
-          continue;
 
-        callback(key, this.content.errors[key])
+      if(this.content.errors.field_errors) {
+
+        // format one, field errors are returned
+        // as an array of object literals that
+        // have errors and name fields
+
+        $.each(this.content.errors.field_errors, (idx, err) => {
+          callback(err.name, err.errors);
+        });
+
+      } else {
+
+        // format two, field errors are returned
+        // keyed to their field name in an object literal
+        //
+        // django-rest-framework format
+
+        for(key in this.content.errors) {
+          if(key == "non_field_errors")
+            continue;
+
+         callback(key, this.content.errors[key])
+        }
       }
     },
 
@@ -218,9 +237,12 @@ twentyc.rest.Client = twentyc.cls.define(
      */
 
     endpoint_url : function(endpoint) {
+
+      var end_slash = (twentyc.rest.no_end_slash ? "" : "/");
+
       if(!endpoint)
-        return this.base_url+"/";
-      return this.base_url+"/"+endpoint + "/";
+        return this.base_url+end_slash;
+      return this.base_url+"/"+endpoint+end_slash;
     },
 
     /**
@@ -416,7 +438,8 @@ twentyc.rest.Widget = twentyc.cls.extend(
       * allows you to define local actions (experimental)
       * @property {Object} local_actions
       */
-     this.local_actions = {}
+     this.local_actions = {};
+     this.formatters = {};
      this.Client(base_url);
      this.bind(jq);
     },
@@ -556,6 +579,8 @@ twentyc.rest.Widget = twentyc.cls.extend(
      */
 
     render_error : function(key, errors) {
+      if(!errors)
+        return;
       var i;
       var error_node = $('<div>').addClass("validation-error");
       var input = this.element.find('[name="'+key+'"]');
@@ -605,7 +630,13 @@ twentyc.rest.Widget = twentyc.cls.extend(
             else
               data[input.attr("name")] = false;
           } else {
-            data[input.attr("name")] = input.val();
+            if (input.data("type") == "int") {
+              data[input.attr("name")] = parseInt(input.val());
+            } else if(input.data("type") == "bool") {
+              data[input.attr("name")] = (input.val().toLowerCase() == "true" ?  true : false);
+            } else {
+              data[input.attr("name")] = input.val();
+            }
           }
         });
       });
@@ -613,6 +644,53 @@ twentyc.rest.Widget = twentyc.cls.extend(
 
     },
 
+    /**
+     * Applies data to the element of the widget assiging it
+     * to elements that have data-field attributes
+     * set
+     *
+     * Fires the `apply_data:before` event
+     *
+     * @param k
+     * @param data
+     */
+
+    apply_data : function(data, element) {
+
+      $(this).trigger("apply_data:before", [data]);
+
+      if(!element)
+        element = this.element;
+
+      var k, tag, val, formatter;
+      for(k in data) {
+        var formatter = this.formatters[k];
+        col_element = element.find('[data-field="'+k+'"]')
+        if(col_element.length)
+          tag = col_element.get(0).tagName.toLowerCase();
+        toggle = col_element.data("toggle")
+        if(toggle) {
+          if(data[k]) {
+            col_element.addClass(toggle);
+          } else {
+            col_element.removeClass(toggle);
+          }
+        } else if(!formatter) {
+          if(tag == "select" || tag == "input" || tag == "textarea") {
+            if(col_element.attr("type") == "checkbox") {
+              col_element.prop("checked", data[k]);
+            } else {
+              col_element.val(data[k]);
+            }
+          } else {
+            col_element.text(data[k]).val(data[k])
+          }
+        } else {
+          val = formatter(data[k], data, col_element)
+          col_element.empty().append(val)
+        }
+      }
+    }
 
   },
   twentyc.rest.Client
@@ -631,6 +709,8 @@ twentyc.rest.Widget = twentyc.cls.extend(
  *
  * - data-api-action: if specified will be appended as endpoint to data-api-base
  * - data-api-method: request method for writes, defaults to POST
+ * - data-submit-inline: if "yes" input elements will be wired to submit form data
+ *   when they detect change
  *
  * If the form element contains a button element with the
  * `submit` css class set it will be wired to submit the form
@@ -663,8 +743,9 @@ twentyc.rest.Form = twentyc.cls.extend(
   "Form",
   {
     Form : function(jq) {
-      var base_url = jq.data("api-base")
-      this.form_action = jq.data("api-action")
+      var base_url = jq.data("api-base");
+      this.form_action = jq.data("api-action");
+      this.submit_inline = jq.data("submit-inline") == "yes";
       this.Widget(base_url, jq);
     },
 
@@ -674,6 +755,9 @@ twentyc.rest.Form = twentyc.cls.extend(
      *
      * Names in `data` will be matched against the `name` attribute
      * of the form inputs
+     *
+     * For elements that you want to skip you can set the `data-constant="yes"`
+     * attribute.
      *
      * @method fill
      * @param {Object} data
@@ -685,6 +769,11 @@ twentyc.rest.Form = twentyc.cls.extend(
       for(key in data) {
         value = data[key];
         this.element.find('[name="'+key+'"]').each(function() {
+
+          if($(this).data("constant") == "yes") {
+            return;
+          }
+
           if($(this).attr("type") == "checkbox") {
             $(this).prop("checked", value);
           } else {
@@ -772,6 +861,46 @@ twentyc.rest.Form = twentyc.cls.extend(
         );
         return false;
       });
+
+      if(this.submit_inline) {
+        this.wire_inline_submit();
+      }
+    },
+
+    /**
+     * Wires the form for inline submitting where
+     * Input elements will submit the form after they detect changes
+     *
+     * This is called automatically if the form element has the `data-submit-inline="yes"`
+     * attribute.
+     *
+     * @method wire_inline_submit
+     */
+
+    wire_inline_submit : function() {
+      var widget = this;
+      var timer = new twentyc.util.SmartTimeout(()=>{},100);
+      var submit_handler = function(ev) {
+        console.log(ev);
+        $(widget).one("api-write:success", () => {
+          $(this).removeClass("saving").addClass("saved");
+        });
+        timer.set(() => {
+          $(this).addClass("saving").removeClass("saved");
+          widget.submit(this.method);
+        }, ev.type == "keyup" ? 500 : 100);
+      };
+
+      this.element.find('input,textarea,select').each(function() {
+        var input = $(this);
+        var tag = this.tagName.toLowerCase();
+        if(tag == "select" || input.attr("type") == "checkbox") {
+          input.on("change", submit_handler);
+        } else {
+          input.on("keyup", submit_handler);
+        }
+      });
+
     },
 
     /**
@@ -784,7 +913,7 @@ twentyc.rest.Form = twentyc.cls.extend(
     wire_submit : function(jq_button) {
       var widget = this;
       jq_button.off("click").click(function() {
-        widget.submit($(this).data("api-method"))
+        widget.submit(this.method)
       });
     }
   },
@@ -873,6 +1002,10 @@ twentyc.rest.Input = twentyc.cls.extend(
           this.post_failure.bind(this)
         );
       }.bind(this));
+    },
+
+    val : function(v) {
+      return this.element.val(v);
     }
 
   },
@@ -937,7 +1070,7 @@ twentyc.rest.Button = twentyc.cls.extend(
  *
  * # optional
  *
- * - data-api-load: endpoint that should be requested to load options
+ * - data-api-load: set to "yes" to load data
  * - data-name-field: which data resultset field to use for option text,
  *   defaults to "name"
  * - data-id-field: which data resultset field to use for option value,
@@ -949,6 +1082,7 @@ twentyc.rest.Button = twentyc.cls.extend(
  *   choices. Defaults to "get"
  * - data-drf-name: relevant if load type is "drf-choices". Specifies the
  *   serializer field name, will default to "name" attribute if not specified.
+ * - data-null-option: specify to add a "empty" value option with a label
  *
  * @class Select
  * @extends twentyc.rest.Input
@@ -1003,10 +1137,17 @@ twentyc.rest.Select = twentyc.cls.extend(
         var select = this.element;
         select.empty();
 
+        if(this.null_option) {
+          let null_parts = this.null_option.split(";");
+          select.append($('<option>').val(null_parts[0]).text(null_parts[1]));
+        }
+
         $(this.proxy_data).find('option').each(function() {
           select.append($(this).clone());
         });
-        return;
+        return new Promise((resolve, reject) => {
+          resolve();
+        });
       }
 
       if(this.load_type == "drf-choices")
@@ -1306,27 +1447,11 @@ twentyc.rest.List = twentyc.cls.extend(
      */
 
     insert : function(data) {
-      var toggle, k, row_element, col_element;
+      var toggle, k, row_element;
 
       row_element = this.template('row')
 
-      for(k in data) {
-        var val, formatter = this.formatters[k];
-        col_element = row_element.find('[data-field="'+k+'"]')
-        toggle = col_element.data("toggle")
-        if(toggle) {
-          if(data[k]) {
-            col_element.addClass(toggle);
-          } else {
-            col_element.removeClass(toggle);
-          }
-        } else if(!formatter) {
-          col_element.text(data[k]).val(data[k])
-        } else {
-          val = formatter(data[k], data, col_element)
-          col_element.empty().append(val)
-        }
-      }
+      this.apply_data(data, row_element);
 
       if(this.formatters.row)
         this.formatters.row(row_element, data)
