@@ -736,6 +736,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
  * @class Form
  * @extends twentyc.rest.Widget
  * @namespace twentyc.rest
+ * @constructor
  * @param {jQuery result} jq form element
  */
 
