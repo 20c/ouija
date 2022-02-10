@@ -4,7 +4,7 @@
 
 ### Example 1: One checkbox for each permission
 ```html
-<div data-api-base="/api/user-perms" id="#my_permission_form">
+<div data-api-base="/api/user-perms" id="my_permission_form">
     <span><input data-permission-flag="c" type="checkbox"> create</span>
     <span><input data-permission-flag="r" type="checkbox"> read</span>
     <span><input data-permission-flag="u" type="checkbox"> update</span>
@@ -21,7 +21,7 @@ var form = new twentyc.rest.PermissionsForm($('#my_permission_form'))
 
 ### Example 2: One checkbox for multiple permissions
 ```html
-<div data-api-base="/api/user-perms" id="#my_permission_form">
+<div data-api-base="/api/user-perms" id="my_permission_form">
     <span><input data-permission-flag="cud" type="checkbox"> create, delete, update</span>
     <span><input data-permission-flag="r" type="checkbox"> read</span>
 </div>
