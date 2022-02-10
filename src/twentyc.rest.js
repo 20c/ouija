@@ -1088,6 +1088,7 @@ twentyc.rest.Button = twentyc.cls.extend(
  * @class Select
  * @extends twentyc.rest.Input
  * @namespace twentyc.rest
+ * @constructor
  * @param {jQuery result} jq jquery result holding the select element
  */
 
