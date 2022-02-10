@@ -3,7 +3,7 @@
 ## Examples
 
 ### Example 1: Displaying data in a table
-```
+```json
 {
   "data": [
      { "id": 1, "name": "first row" },
