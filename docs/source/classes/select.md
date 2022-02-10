@@ -2,7 +2,7 @@
 
 ## Examples
 
-### Example 1: Populating select with options
+### Example 1: Basic usage
 ```json
 {
   "data": [
@@ -28,7 +28,7 @@ This will result in this HTML:
 </select>
 ```
 
-### Example 2: Blank option and custom attributes
+### Example 2: Blank option, non-defualt values and text
 ```json
 {
   "data": [
