@@ -1658,7 +1658,7 @@ twentyc.rest.List = twentyc.cls.extend(
  *  <span><input data-permission-flag="d" type="checkbox"> delete</span>
  * </div>
  * ```
- * @class PermissionForm
+ * @class PermissionsForm
  * @extends twentyc.rest.Form
  * @namespace twentyc.rest
  * @constructor
