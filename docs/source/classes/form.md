@@ -15,5 +15,5 @@
 ```
 
 ```javascript
-var form = new twentyc.rest.Form($('#my_form'))
+var form = new twentyc.rest.Form($('#my_form'));
 ```

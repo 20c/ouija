@@ -72,7 +72,7 @@ list.load();
 The value of `data-api-action` will be joined to the list's `data-api-base` value.
 
 ### Example 4: Displaying using spans in a table
-```
+```json
 {
   "data": [
      { "id": 1, "name": "first row" },
@@ -94,6 +94,6 @@ The value of `data-api-action` will be joined to the list's `data-api-base` valu
 ```
 
 ```JavaScript
-var list = new twentyc.rest.List($('#my_list'))
+var list = new twentyc.rest.List($('#my_list'));
 list.load();
 ```
