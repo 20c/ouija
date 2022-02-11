@@ -893,7 +893,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
  * @extends twentyc.rest.Widget
  * @namespace twentyc.rest
  * @constructor
- * @param {jQuery result} jq form element
+ * @param {jQuery result} jq jquery result holding the form element
  */
 
 twentyc.rest.Form = twentyc.cls.extend(
@@ -1244,6 +1244,7 @@ twentyc.rest.Button = twentyc.cls.extend(
  * @class Select
  * @extends twentyc.rest.Input
  * @namespace twentyc.rest
+ * @constructor
  * @param {jQuery result} jq jquery result holding the select element
  */
 
@@ -1803,7 +1804,7 @@ twentyc.rest.List = twentyc.cls.extend(
 /**
  * Special form widget for handling user permissions
  *
- * This expect a form element that contains checkboxes for
+ * This expects an element that contains checkboxes for
  * permission flags
  *
  * Each checkbox element should have these attributes set
@@ -1813,15 +1814,18 @@ twentyc.rest.List = twentyc.cls.extend(
  * # Example
  *
  * ```html
- * <span><input data-permission-flag="c" type="checkbox"> create</span>
- * <span><input data-permission-flag="r" type="checkbox"> read</span>
- * <span><input data-permission-flag="u" type="checkbox"> update</span>
- * <span><input data-permission-flag="d" type="checkbox"> delete</span>
+ * <div data-api-base="/api/user-perms">
+ *  <span><input data-permission-flag="c" type="checkbox"> create</span>
+ *  <span><input data-permission-flag="r" type="checkbox"> read</span>
+ *  <span><input data-permission-flag="u" type="checkbox"> update</span>
+ *  <span><input data-permission-flag="d" type="checkbox"> delete</span>
+ * </div>
  * ```
- * @class PermissionForm
+ * @class PermissionsForm
  * @extends twentyc.rest.Form
  * @namespace twentyc.rest
  * @constructor
+ * @param {jQuery result} jq jquery result holding the element.
  */
 
 twentyc.rest.PermissionsForm = twentyc.cls.extend(
