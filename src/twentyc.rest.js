@@ -288,7 +288,7 @@ twentyc.rest.Client = twentyc.cls.define(
       /**
        * triggered after the POST, PUT or DELETE request has returned
        *
-       * @event api-writed:after
+       * @event api-write:after
        * @param {String} endpoint the api endpoint to be requested
        * @param {Object} data request payload
        * @param {String} method request method
