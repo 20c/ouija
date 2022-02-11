@@ -27,8 +27,8 @@ twentyc.rest = {
 
   /**
    * object holding global config
+   * @property config
    * @type Object
-   * @name config
    * @namespace twentyc.rest
    */
 
@@ -39,8 +39,8 @@ twentyc.rest = {
      * be sent with write requests to the API
      * if any
      *
+     * @property csrf
      * @type String
-     * @name csrf
      * @namespace twentyc.rest.config
      */
 
@@ -262,7 +262,7 @@ twentyc.rest.Client = twentyc.cls.define(
        * triggered before the request of the specified method is dispatched and allows
        * for modification of the url parameters
        *
-       * @event api-{get|post|put|delete|options}:before
+       * @event api-[get|post|put|delete|options]:before
        * @param {String} endpoint the api endpoint to be requested
        * @param {Object} data request payload
        */
@@ -336,7 +336,7 @@ twentyc.rest.Client = twentyc.cls.define(
       /**
        * triggered if the request of the specified method returned with a succesful http status
        *
-       * @event api-{get|post|put|delete|options}:success
+       * @event api-[get|post|put|delete|options]:success
        * @param {String} endpoint the api endpoint to be requested
        * @param {Object} data request payload
        * @param {twentyc.rest.Response} response
@@ -375,7 +375,7 @@ twentyc.rest.Client = twentyc.cls.define(
       /**
        * triggered if the request of the specified method returned with an error http status
        *
-       * @event api-{get|post|put|delete|options}:error
+       * @event api-[get|post|put|delete|options]:error
        * @param {String} endpoint the api endpoint to be requested
        * @param {Object} data request payload
        * @param {twentyc.rest.Response} response
@@ -770,7 +770,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
      * by checking for form elements and converting their values
      * to an object literal compatible to be sent as a payload
      *
-     * @param payload
+     * @method payload
      * @returns {Object}
      */
 
@@ -806,6 +806,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
      *
      * Fires the `apply_data:before` event
      *
+     * @method apply_data
      * @param k
      * @param data
      */
@@ -1580,6 +1581,9 @@ twentyc.rest.List = twentyc.cls.extend(
 
     /**
      * reload single row
+     *
+     * @method reload_row
+     * @param {Mixed} id
      */
 
     reload_row : function(id) {
@@ -1708,7 +1712,11 @@ twentyc.rest.List = twentyc.cls.extend(
     },
 
     /**
-     * sorting
+     * initializes list for sorting
+     *
+     * TODO: docs / example
+     *
+     * @method initliaze_sorting
      */
 
     initialize_sorting: function() {
