@@ -227,6 +227,160 @@ twentyc.rest.Client = twentyc.cls.define(
   {
     Client : function(base_url) {
       this.base_url = base_url.replace(/\/$/g,'');
+
+      /**
+       * triggered before the request is dispatched and allows
+       * for modification of the url parameters / request payload through `data`
+       *
+       * @event api-request:before
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered before the GET or OPTIONS request is dispatched and allows
+       * for modification of the url parameters through `data`
+       *
+       * @event api-read:before
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered before the POST, PUT or DELETE request is dispatched and allows
+       * for modification of the request payload
+       *
+       * @event api-write:before
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered before the request of the specified method is dispatched and allows
+       * for modification of the url parameters
+       *
+       * @event api-{get|post|put|delete|options}:before
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       */
+
+      /**
+       * triggered after the request has returned
+       *
+       * @event api-request:after
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered after the GET or OPTIONS request has returned
+       *
+       * @event api-read:after
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered after the POST, PUT or DELETE request has returned
+       *
+       * @event api-writed:after
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {String} method request method
+       */
+
+
+      /**
+       * triggered after the request of the specified method has returned
+       *
+       * @event api-{get|post|put|delete|options):after
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       */
+
+      /**
+       * triggered if the request returned with a succesful http status
+       *
+       * @event api-request:success
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered if the GET or OPTIONS request returned with a succesful http status
+       *
+       * @event api-read:success
+       * @param {string} endpoint the api endpoint to be requested
+       * @param {object} data request payload
+       * @param {twentyc.rest.response} response
+       * @param {string} method request method
+       */
+
+      /**
+       * triggered if the POST, PUT or DELETE  request returned with a succesful http status
+       *
+       * @event api-write:success
+       * @param {string} endpoint the api endpoint to be requested
+       * @param {object} data request payload
+       * @param {twentyc.rest.response} response
+       * @param {string} method request method
+       */
+
+      /**
+       * triggered if the request of the specified method returned with a succesful http status
+       *
+       * @event api-{get|post|put|delete|options}:success
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       */
+
+      /**
+       * triggered if the request returned with an error http status
+       *
+       * @event api-request:error
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered if the GET or OPTIONS request returned with an error http status
+       *
+       * @event api-read:error
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered if the POST, PUT or DELETE request returned with an error http status
+       *
+       * @event api-write:error
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       * @param {String} method request method
+       */
+
+      /**
+       * triggered if the request of the specified method returned with an error http status
+       *
+       * @event api-{get|post|put|delete|options}:error
+       * @param {String} endpoint the api endpoint to be requested
+       * @param {Object} data request payload
+       * @param {twentyc.rest.Response} response
+       */
+
     },
 
     /**
@@ -272,6 +426,7 @@ twentyc.rest.Client = twentyc.cls.define(
 
     read : function(endpoint, data, method) {
       method = method.toLowerCase()
+
       $(this).trigger("api-request:before", [endpoint,data,method])
       $(this).trigger("api-read:before", [endpoint,data,method])
       $(this).trigger("api-"+method+":before", [endpoint,data])
