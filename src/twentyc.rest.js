@@ -46,7 +46,7 @@ twentyc.rest = {
 
     csrf : ""
   }
-}
+};
 
 /**
  * Wrapper for API responses
@@ -821,10 +821,13 @@ twentyc.rest.Widget = twentyc.cls.extend(
       var k, tag, val, formatter;
       for(k in data) {
         var formatter = this.formatters[k];
-        col_element = element.find('[data-field="'+k+'"]')
+        var col_element = element.find('[data-field="'+k+'"]');
+
         if(col_element.length)
           tag = col_element.get(0).tagName.toLowerCase();
-        toggle = col_element.data("toggle")
+
+        var toggle = col_element.data("toggle");
+
         if(toggle) {
           if(data[k]) {
             col_element.addClass(toggle);
@@ -1194,7 +1197,15 @@ twentyc.rest.Button = twentyc.cls.extend(
       this.Widget_bind(jq);
       this.method = jq.data("api-method") || "POST";
 
-      this.element.on("mouseup", function(ev) {
+      /**
+       * which input event to bind to, defaults to 'mouseup'
+       * @property bind_to_event
+       * @type String
+       */
+
+      var bind_to_event = (this.bind_to_event || "mouseup")
+
+      this.element.on( bind_to_event , function(ev) {
 
         var confirm_required = this.element.data("confirm");
         if(confirm_required && !confirm(confirm_required))
@@ -1599,6 +1610,25 @@ twentyc.rest.List = twentyc.cls.extend(
     },
 
     /**
+     * Builds the html elements for a row in the list
+     *
+     * Note this does not fill in any data by itself and is called
+     * automatically by the `insert` method.
+     *
+     * Override this if you need to dynamically control how
+     * a the row elements are built, for example if you want to
+     * do different rows for different object types
+     *
+     * @method build_row
+     * @param {Object} data
+     * @returns {jQuery} row element
+     */
+
+    build_row : function(data) {
+      return this.template('row');
+    },
+
+    /**
      * insert a new row from object
      *
      * triggers insert:after event
@@ -1608,9 +1638,9 @@ twentyc.rest.List = twentyc.cls.extend(
      */
 
     insert : function(data) {
-      var toggle, k, row_element;
+      var row_element;
 
-      row_element = this.template('row')
+      row_element = this.build_row(data);
 
       this.apply_data(data, row_element);
 
