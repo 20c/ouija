@@ -4,3 +4,6 @@
 /docs/Makefile
 /docs/source/conf.py
 /docs/source/index.rst
+
+# npm
+/node_modules/
