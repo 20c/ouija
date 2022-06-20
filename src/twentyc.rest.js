@@ -1,3 +1,4 @@
+/* global jQuery, twentyc */
 (function(twentyc, $) {
 
 /**
@@ -820,7 +821,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
 
       var k, tag, val, formatter;
       for(k in data) {
-        var formatter = this.formatters[k];
+        formatter = this.formatters[k];
         var col_element = element.find('[data-field="'+k+'"]');
 
         if(col_element.length)
@@ -1742,7 +1743,7 @@ twentyc.rest.List = twentyc.cls.extend(
             return;
           var apiobj = row.data("apiobject")
           var _action = action.replace(
-            /\{([^\{\}]+)\}/,
+            /\{([^{}]+)\}/,
             (match, p1, offset, string) => {
               return apiobj[p1];
             }
@@ -1812,7 +1813,7 @@ twentyc.rest.List = twentyc.cls.extend(
       } else {
           this.sort_target = target;
           this.sort_asc = true;
-      };
+      }
       this.load();
     },
 
@@ -1900,11 +1901,12 @@ twentyc.rest.PermissionsForm = twentyc.cls.extend(
 
     set_flag_values : function(flags) {
       this.element.find('input[data-permission-flag]').each(function() {
-        var flag_name = $(this).data("permission-flag")
+        var value, flag_name = $(this).data("permission-flag")
         if(flag_name.length == 1) {
-          var value = (flags.perms.indexOf(flag_name) > -1)
+          value = (flags.perms.indexOf(flag_name) > -1)
         } else {
-          var i, value = true;
+          var i; 
+          value = true;
           for(i = 0; i < flag_name.length; i++) {
             if(flags.perms.indexOf(flag_name.charAt(i)) == -1)
               value = false;
