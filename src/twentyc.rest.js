@@ -1,4 +1,3 @@
-/* global jQuery, twentyc */
 (function(twentyc, $) {
 
 /**
@@ -19,6 +18,30 @@
         return $found.first(); // Return first match of the collection
     }
 })(jQuery);
+
+/**
+ * takes a jquery result and replaces all plain text occurences
+ * of email addresses and urls with links
+ *
+ * @method replace_urls_with_links
+ */
+
+function replace_urls_with_links(jQueryResult) {
+  jQueryResult.contents().filter(function() {
+    return this.nodeName != "A";
+  }).each(function() {
+    const text = $(this).text();
+    const urlRegex = /((https?:\/\/[^\s]+)|(\S+@\S+))/g;
+    const html = text.replace(urlRegex, (match) => {
+      const emailRegex = /\S+@\S+/;
+      if (emailRegex.test(match)) {
+        return `<a href="mailto:${match}">${match}</a>`;
+      }
+      return `<a href="${match}">${match}</a>`;
+    });
+    $(this).replaceWith(html);
+  });
+}
 
 /**
  * namespace for twentyc.rest
@@ -46,8 +69,76 @@ twentyc.rest = {
      */
 
     csrf : ""
+  },
+
+  /**
+   * object holding URL utility functions
+   * @property url
+   * @type Object
+   * @namespace twentyc.rest
+   */
+
+  url: {
+    /**
+     * Trims leading and trailing slashes from the given endpoint.
+     *
+     * @method trim_endpoint
+     * @param {String} endpoint - The endpoint string to trim.
+     * @return {String} The trimmed endpoint string.
+     */
+    trim_endpoint: function (endpoint) {
+      // urljoin is not guaranteed to strip trailing double slashes on
+      // either side of the endpoint, so we do it manually
+      return endpoint.replace(/^\/+|\/+$/g, "");
+    },
+
+    /**
+     * Joins URL parts, removing extra slashes at the edges of the parts.
+     *
+     * @method url_join
+     * @param {String} left - The leftmost URL part.
+     * @param {...String} args - The remaining URL parts.
+     * @return {String} The joined URL string with removed extra slashes.
+     */
+    url_join: function (left, ...args) {
+      // Simplified urljoin that gets rid of extra / at the edges
+      // of parts
+
+      let right = [];
+      let trailing_slash = !twentyc.rest.no_end_slash;
+
+      // trim left
+
+      left = left.replace(/\/+$/g, "");
+
+      for (const parts of args) {
+        right = right.concat(
+          parts
+            .split("/")
+            .filter((part) => part)
+            .map((part) => this.trim_endpoint(part))
+        );
+      }
+
+      if(!right.length)
+        return trailing_slash ? `${left}/` : left;
+
+      right = right.join("/");
+
+      if (!left) {
+        return trailing_slash ? `/${right}/` : `/${right}`;
+      }
+
+      const joinedUrl = `${left.replace(/\/$/, "")}/${right}`;
+
+      return trailing_slash ? `${joinedUrl}/` : joinedUrl;
+    }
+  
   }
+
 };
+
+
 
 /**
  * Wrapper for API responses
@@ -392,12 +483,10 @@ twentyc.rest.Client = twentyc.cls.define(
      */
 
     endpoint_url : function(endpoint) {
-
-      var end_slash = (twentyc.rest.no_end_slash ? "" : "/");
-
       if(!endpoint)
-        return this.base_url+end_slash;
-      return this.base_url+"/"+endpoint+end_slash;
+        return twentyc.rest.url.url_join(this.base_url);
+      
+      return twentyc.rest.url.url_join(this.base_url, endpoint);
     },
 
     /**
@@ -468,8 +557,10 @@ twentyc.rest.Client = twentyc.cls.define(
      * @returns {Promise}
      */
 
-    write : function(endpoint, data, method) {
+    write : function(endpoint, data, method, url = null) {
+      url = url || this.endpoint_url(endpoint);
       method = method.toLowerCase();
+
       $(this).trigger("api-request:before", [endpoint,data,method])
       $(this).trigger("api-write:before", [endpoint,data,method])
       $(this).trigger("api-"+method+":before", [endpoint,data])
@@ -477,7 +568,7 @@ twentyc.rest.Client = twentyc.cls.define(
         $.ajax({
           dataType : "json",
           method : method.toUpperCase(),
-          url : this.format_request_url(this.endpoint_url(endpoint), method),
+          url : this.format_request_url(url, method),
           data : this.encode(data),
           headers : {
             "Content-Type" : "application/json",
@@ -761,9 +852,12 @@ twentyc.rest.Widget = twentyc.cls.extend(
       for(i = 0; i < errors.length; i++) {
         $(twentyc.rest).trigger("non-field-error", [errors[i], errors, i, error_node, this]);
         if(errors[i])
-          error_node.append($('<div>').addClass("non-field-error").text(errors[i]))
+          error_node.append($('<div>').addClass("non-field-error").text(errors[i]));
       }
-      this.element.prepend(error_node)
+
+      replace_urls_with_links(error_node);
+
+      this.element.prepend(error_node);
     },
 
     /**
@@ -794,8 +888,17 @@ twentyc.rest.Widget = twentyc.cls.extend(
               data[input.attr("name")] = input.val();
             }
           }
+
+          // treat blank values as null where necessary
+
+          if(input.data("blank-as-null") == "yes" && input.val() == "") {
+            data[input.attr("name")] = null;
+          }
         });
       });
+
+      $(this).trigger("payload:after", [data]);
+
       return data;
 
     },
@@ -821,7 +924,7 @@ twentyc.rest.Widget = twentyc.cls.extend(
 
       var k, tag, val, formatter;
       for(k in data) {
-        formatter = this.formatters[k];
+        var formatter = this.formatters[k];
         var col_element = element.find('[data-field="'+k+'"]');
 
         if(col_element.length)
@@ -1174,6 +1277,59 @@ twentyc.rest.Input = twentyc.cls.extend(
 );
 
 /**
+ * Checkbox widget
+ *
+ * Wires a html element (input type="checkbox") to the API
+ *
+ * The select element should have the following attributes set
+ *
+ * # required
+ *
+ * - data-api-base: api root or full path to endpoint
+ *
+ * @class Button
+ * @extends twentyc.rest.Input
+ * @namespace twentyc.rest
+ * @param {jQuery result} jq jquery result holding the button element
+ */
+
+
+twentyc.rest.Checkbox = twentyc.cls.extend(
+  "Checkbox",
+  {
+    payload : function() {
+      var pl = {};
+      pl[this.element.attr('name')] = (this.element.prop("checked") ? true : false);
+      return pl;
+    },
+    bind : function(jq) {
+      this.Widget_bind(jq);
+      this.method = jq.data("api-method") || "POST";
+
+      this.element.on("change", function(ev) {
+
+        var confirm_required = this.element.data("confirm");
+        if(confirm_required && !confirm(confirm_required))
+          return;
+
+        this.clear_errors();
+
+        var action = this.action;
+        var fn = this[this.method.toLowerCase()].bind(this);
+
+        fn(action, this.payload()).then(
+          this.post_success.bind(this),
+          this.post_failure.bind(this)
+        );
+      }.bind(this));
+
+    }
+  },
+  twentyc.rest.Input
+);
+
+
+/**
  * Button widget
  *
  * Wires a html element (typically `<a>` or `<button>` to the API
@@ -1315,6 +1471,7 @@ twentyc.rest.Select = twentyc.cls.extend(
         $(this.proxy_data).find('option').each(function() {
           select.append($(this).clone());
         });
+        $(this).trigger("load:after", [select, {}, this]);
         return new Promise((resolve, reject) => {
           resolve();
         });
@@ -1361,6 +1518,8 @@ twentyc.rest.Select = twentyc.cls.extend(
         var selected_field = this.selected_field
         var widget = this;
 
+        var old_val = select.val();
+
         select.empty();
 
         if(this.null_option) {
@@ -1379,8 +1538,11 @@ twentyc.rest.Select = twentyc.cls.extend(
           select.append(opt);
         });
 
-        if(select_this)
+        if(select_this) {
           select.val(select_this);
+          if(select_this != old_val)
+            select.trigger("change", []);
+        }
 
         $(this).trigger("load:after", [select, response.content.data, this]);
       }.bind(this));
@@ -1587,7 +1749,7 @@ twentyc.rest.List = twentyc.cls.extend(
         response.rows(function(row, idx) {
           this.insert(row);
         }.bind(this));
-        $(this).trigger("load:after");
+        $(this).trigger("load:after", [response]);
         return
       }.bind(this));
     },
@@ -1733,6 +1895,7 @@ twentyc.rest.List = twentyc.cls.extend(
         var method = ($(this).data("api-method") || "POST").toLowerCase();
         var action = $(this).data("api-action").toLowerCase();
         var callback = $(this).data("api-callback");
+        var callback_name = $(this).data("api-callback");
         var confirm_set = $(this).data("confirm")
 
         if(callback)
@@ -1743,13 +1906,15 @@ twentyc.rest.List = twentyc.cls.extend(
             return;
           var apiobj = row.data("apiobject")
           var _action = action.replace(
-            /\{([^{}]+)\}/,
+            /\{([^\{\}]+)\}/,
             (match, p1, offset, string) => {
               return apiobj[p1];
             }
           )
           widget[method](_action, row.data("apiobject")).then(
             callback, widget.action_failure.bind(widget)
+          ).then(
+            $(widget).trigger("api_callback_"+callback_name+":after")
           );
         });
       });
@@ -1801,9 +1966,7 @@ twentyc.rest.List = twentyc.cls.extend(
       Specific to django-rest-framework: we add "ordering" as a query
       parameter to the API calls
       */
-      this.payload = function(){return {ordering: this.ordering}}
-
-      console.log("sort init", this);
+      this.payload = function(){return {ordering: this.ordering};};
     },
 
     sort: function(target, secondary) {
@@ -1813,7 +1976,7 @@ twentyc.rest.List = twentyc.cls.extend(
       } else {
           this.sort_target = target;
           this.sort_asc = true;
-      }
+      };
       this.load();
     },
 
@@ -1901,12 +2064,11 @@ twentyc.rest.PermissionsForm = twentyc.cls.extend(
 
     set_flag_values : function(flags) {
       this.element.find('input[data-permission-flag]').each(function() {
-        var value, flag_name = $(this).data("permission-flag")
+        var flag_name = $(this).data("permission-flag")
         if(flag_name.length == 1) {
-          value = (flags.perms.indexOf(flag_name) > -1)
+          var value = (flags.perms.indexOf(flag_name) > -1)
         } else {
-          var i; 
-          value = true;
+          var i, value = true;
           for(i = 0; i < flag_name.length; i++) {
             if(flags.perms.indexOf(flag_name.charAt(i)) == -1)
               value = false;
